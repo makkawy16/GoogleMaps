@@ -14,17 +14,31 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.googlemaps.databinding.ActivityMainBinding;
 import com.example.googlemaps.utils.MyLocation;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
     private static final int LOCATION_REQUEST_CODE = 100;
     MyLocation myLocation;
     Location location;
+    ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        binding.mapView.onCreate(savedInstanceState);
+
+        binding.mapView.getMapAsync(this);
 
         myLocation = new MyLocation(this);
 
@@ -36,6 +50,42 @@ public class MainActivity extends AppCompatActivity {
             requestLocationPermission();
         }
 
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        binding.mapView.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        binding.mapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        binding.mapView.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        binding.mapView.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        binding.mapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        binding.mapView.onLowMemory();
     }
 
     private void requestLocationPermission() {
@@ -92,6 +142,33 @@ public class MainActivity extends AppCompatActivity {
         });
         dialog.show();
 
+
+    }
+
+    GoogleMap myGoogleMap;
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        myGoogleMap = googleMap;
+        addMarker();
+    }
+
+    Marker myMarker;
+
+    private void addMarker() {
+        if (myGoogleMap == null || location == null)
+            Toast.makeText(this, "try again", Toast.LENGTH_SHORT).show();
+        else {
+          myMarker =  myGoogleMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(location.getLatitude(), location.getLongitude()))
+                    .title("i am here")
+
+            );
+        }
+
+        myGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(location.getLatitude(), location.getLongitude())
+                ,16f));
 
     }
 
